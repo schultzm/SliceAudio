@@ -20,14 +20,14 @@ Can input/output in any format that ffmpeg supports.
 
 example usage:
 python SliceAudio.py -i xyz.m4a -f m4a -b 2 -s 11025 -l 10000
-python SliceAudio.py -h
+
 """
 
 #parse command line input
 PARSER = argparse.ArgumentParser(description=
-								 """
-								 Generates one-shot samples from long audio files in batch. 
-								 """)
+								"""
+								Generates one-shot samples from long audio files in batch.
+								""")
 PARSER.add_argument('-i', '--infiles', help=
 					"""
 					Name of input files. Can use e.g., '*.mp3' to bring up all mp3 files in a path.
