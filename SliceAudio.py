@@ -26,7 +26,7 @@ python SliceAudio.py -h
 #parse command line input
 PARSER = argparse.ArgumentParser(description=
 								 """
-								 reads in and
+								 Generates one-shot samples from long audio files in batch. 
 								 """)
 PARSER.add_argument('-i', '--infiles', help=
 					"""
