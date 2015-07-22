@@ -50,8 +50,8 @@ PARSER.add_argument('-b', '--sample_width', help=
 					""", default = 2, required=False)
 PARSER.add_argument('-s', '--sample_rate', help=
 					"""
-					Sample rate of slices. '44100' (44.1kHz, default, CD quality); '48000' (DVD). Other common rates are '22050', '24000', '12000' and '11025'.
-					""", default = 44100, required=False)
+					Sample rate of slices. '44100' (44.1kHz, CD quality); '48000' (default, DVD quality). Other common rates are '22050', '24000', '12000' and '11025'.
+					""", default = 48000, required=False)
 PARSER.add_argument('-l', '--sample_slice_length_ms', help=
 					"""
 					Length of sample slices in milliseconds. '2000' (default, 2 seconds).
