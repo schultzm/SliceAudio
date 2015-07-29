@@ -66,7 +66,7 @@ ARGS = PARSER.parse_args()
 
 #Function to slice up the audio.
 def slice_audio(files, channels, outformat, width, rate, slice_length, overlap):
-	outformat = outformat.replace('.','')
+	outformat = outformat.replace('.','').lower()
 	#Allow the user to see their x-bit selection with this dictionary.
 	width_translator = {1:'8-bit', 2:'16-bit', 4:'32-bit'}
 	#For every file in the input list do processing.
@@ -80,7 +80,7 @@ def slice_audio(files, channels, outformat, width, rate, slice_length, overlap):
 			print str(f.samplerate)+'Hz to '+str(rate)+' Hz;'
 			print 'Slicing '+str(f.duration*1000)+' ms file into '+str(slice_length)+' ms slices with a slice overlap of '+str(overlap)+' ms;'
 		#Store the file in RAM.
-		sound = AudioSegment.from_file(file, fileExtension.replace('.',''))
+		sound = AudioSegment.from_file(file, fileExtension.replace('.','').lower())
 		#Print the 'x-bit' conversion parameters.
 		print width_translator[sound.sample_width]+' to '+width_translator[int(width)]+'.\n'
 		#Implement the user-selected or default (if nothing selected) parameters for processing.
