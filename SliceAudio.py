@@ -1,12 +1,17 @@
 ###########################
 #dr.mark.schultz@gmail.com#
-#220715####################
+#20160626####################
 ###########################
 import os
 import glob
 from pydub import AudioSegment
 import argparse
 import audioread
+import time
+
+
+#Create time-stamp for folder name
+TIMESTR = time.strftime("%Y%m%d-%H%M%S")
 
 
 """
@@ -19,7 +24,6 @@ Default will spit out wav file slices of 2 second duration, in 16bit/mono/44.1kH
 Analog Elektron Rytm drum machine).
 Will chop up the input file and spit out slices along its length until it reaches the end of the file.
 Can input/output in any format that ffmpeg supports.
-
 example usage:
 python SliceAudio.py -i xyz.m4a -f m4a -b 2 -s 11025 -l 10000
 python SliceAudio.py -h
@@ -29,6 +33,9 @@ python SliceAudio.py -h
 PARSER = argparse.ArgumentParser(description=
 								"""
 								Generates one-shot samples from long audio files in batch.\n
+								Also reverses each slice and saves them to file.
+								Glues the reversed slices together in input order and saves them to file.
+								e.g., song sequence 'ABC'becomes 'A-reversedB-revCrev' (not 'CBA')
 								Email: dr.mark.schultz@gmail.com for questions/feedback.
 								""")
 PARSER.add_argument('-i', '--infiles', help=
@@ -56,9 +63,9 @@ PARSER.add_argument('-l', '--sample_slice_length_ms', help=
 					"""
 					Length of sample slices in milliseconds. '2000' (default, 2 seconds).
 					""", default = 2000, required=False)
-PARSER.add_argument('-o', '--slice_overlap_slide_ms', help=
+PARSER.add_argument('-o', '--window_slide_ms', help=
 					"""
-					Move the slice window this many milliseconds along to make the next slice (a 'sliding window'). '2000' (default, 2 seconds).
+					Move the slice window along this many milliseconds to start the next slice (a 'sliding window'). '2000' (default, 2 seconds).
 					""", default = 2000, required=False)
 
 
@@ -77,8 +84,8 @@ def slice_audio(files, channels, outformat, width, rate, slice_length, overlap):
 			print '\nConverting '+fileName+' from:'
 			print fileExtension+' to .'+outformat+';'
 			print str(f.channels)+' channel(s) to '+str(channels)+' channel(s);'
-			print str(f.samplerate)+'Hz to '+str(rate)+' Hz;'
-			print 'Slicing '+str(f.duration*1000)+' ms file into '+str(slice_length)+' ms slices with a slice overlap of '+str(overlap)+' ms;'
+			print str(f.samplerate)+' Hz to '+str(rate)+' Hz;'
+			print 'Slicing '+str(f.duration*1000)+' ms file into '+str(slice_length)+' ms slices with a window slide of '+str(overlap)+' ms;'
 		#Store the file in RAM.
 		sound = AudioSegment.from_file(file, fileExtension.replace('.','').lower())
 		#Print the 'x-bit' conversion parameters.
@@ -90,15 +97,25 @@ def slice_audio(files, channels, outformat, width, rate, slice_length, overlap):
 		length_sound_ms = len(sound)
 		length_slice_ms = int(slice_length)
 		slice_start = 0
+		#create audiosegment object
+		notes_reversed = sound[0:1].reverse()
 		#Begin slicing at the start of the file.
 		while slice_start + length_slice_ms < length_sound_ms:
 			sound_slice = sound[slice_start:slice_start+length_slice_ms]
+			backwards = sound_slice.reverse()
+			notes_reversed += backwards
 			sound_slice.export(fileName+'.slice'+str(slice_start/1000)+'SecsTo'+str((slice_start+length_slice_ms)/1000)+'Secs.'+outformat, format=outformat)
+			backwards.export(fileName+'backwards_slice'+str(slice_start/1000)+'SecsTo'+str((slice_start+length_slice_ms)/1000)+'Secs.'+outformat, format=outformat)
 			slice_start += int(overlap)
 		#When the slice is abutting the end of the file, output that slice too.'
 		if slice_start + length_slice_ms >= length_sound_ms:
 			sound_slice = sound[slice_start:length_sound_ms]
+			backwards = sound_slice.reverse()
+			notes_reversed += backwards
 			sound_slice.export(fileName+'.slice'+str(slice_start/1000)+'SecsToEndFileAt'+str((length_sound_ms)/1000)+'Secs.'+outformat, format=outformat)
+			backwards.export(fileName+'backwards_slice'+str(slice_start/1000)+'SecsToEndFileAt'+str((slice_start+length_slice_ms)/1000)+'Secs.'+outformat, format=outformat)
+		#Save the sewn together backwards bits to file
+		notes_reversed.export(fileName+'notes_reversed.'+outformat, format=outformat)
 
 #Execute the slice_audio function.
 slice_audio(ARGS.infiles, ARGS.channels, ARGS.format_out, ARGS.sample_width, ARGS.sample_rate, ARGS.sample_slice_length_ms, ARGS.slice_overlap_slide_ms)
